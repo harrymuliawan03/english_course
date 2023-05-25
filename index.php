@@ -1,6 +1,7 @@
 <?php 
 session_start();
 
+
 if( !isset($_SESSION["login"]) ) {
     header("Location: login.php");
     exit;
@@ -21,7 +22,6 @@ if ( isset($_POST["cari"]) ) {
 }
 // jika ada session cari
 if( isset($_SESSION['cari']) && $_SESSION['cari'] != '' ) {
-    $cari = $_SESSION['cari'];
     $student = query("SELECT * FROM student WHERE 
     name like '%$cari%' OR
     birthplace like '%$cari%' OR
@@ -89,62 +89,65 @@ $jumlahHalaman = ceil($jumlahData / $batas);
         <br><br>
         <!-- form untuk mencari data student -->
         <form class="cari" action="" method="post">
-            <input type="text" name="keyword" autofocus placeholder="Input search keyword" size="40" autocomplete="off">
-            <button type="submit" name="cari">Cari Data</button>
+            <input type="text" name="keyword" autofocus placeholder="Input search keyword" size="40" autocomplete="off"
+                id="keyword">
+            <button type="submit" name="cari" id="search-button">Cari Data</button>
             <button type="submit" name="all">Semua Data</button>
         </form>
+        <div id="container">
+            <table>
 
-        <table>
+                <tr>
+                    <th>no.</th>
+                    <th>foto</th>
+                    <th>nama</th>
+                    <th>tempat lahir</th>
+                    <th>tanggal lahir</th>
+                    <th>email</th>
+                    <th>aksi</th>
+                </tr>
 
-            <tr>
-                <th>no.</th>
-                <th>foto</th>
-                <th>nama</th>
-                <th>tempat lahir</th>
-                <th>tanggal lahir</th>
-                <th>email</th>
-                <th>aksi</th>
-            </tr>
+                <?php $i = 1; ?>
+                <?php foreach( $student as $row ) : ?>
+                <tr>
+                    <td><?= $i; ?></td>
+                    <td><img src="img/<?= $row["photo"]; ?>" width="50"></td>
+                    <td>
+                        <?= $row["name"] ?>
+                    </td>
+                    <td><?= $row["birthplace"] ?></td>
+                    <td><?= $row["year_of_birth"] ?></td>
+                    <td><?= $row["email"] ?></td>
+                    <td><a href="change.php?id=<?= $row['id']; ?>">change</a> | <a
+                            href="delete.php?id=<?= $row['id'];?>"
+                            onclick="return confirm('yakin ingin menghapus data ?'); ">delete</a></td>
+                </tr>
+                <?php $i++; ?>
+                <?php endforeach; ?>
 
-            <?php $i = 1; ?>
-            <?php foreach( $student as $row ) : ?>
-            <tr>
-                <td><?= $i; ?></td>
-                <td><img src="img/<?= $row["photo"]; ?>" width="50"></td>
-                <td>
-                    <?= $row["name"] ?>
-                </td>
-                <td><?= $row["birthplace"] ?></td>
-                <td><?= $row["year_of_birth"] ?></td>
-                <td><?= $row["email"] ?></td>
-                <td><a href="change.php?id=<?= $row['id']; ?>">change</a> | <a href="delete.php?id=<?= $row['id'];?>"
-                        onclick="return confirm('yakin ingin menghapus data ?'); ">delete</a></td>
-            </tr>
-            <?php $i++; ?>
-            <?php endforeach; ?>
-
-        </table>
+            </table>
+        </div>
         <br><br>
 
         <!-- Navigasi -->
         <div>
             <?php if($halamanActive > 1): ?>
-                <a href="?page=<?= $halamanActive - 1; ?>">&laquo;</a>
+            <a href="?page=<?= $halamanActive - 1; ?>">&laquo;</a>
             <?php endif; ?>
-                <?php if($jumlahHalaman == 1) : ?>
-                        <p></p>
-                    <?php else : ?>
-                        <?php for($i = 1; $i <= $jumlahHalaman; $i++): ?>
-                            <?php if($i == $halamanActive) : ?>
-                                <a href="?page=<?= $i ?>" style="font-weight: bold; color: red;"><?= $i ?></a>
-                            <?php else : ?>
-                                <a href="?page=<?= $i ?>"><?= $i ?></a>
-                            <?php endif; ?>
-                        <?php endfor; ?>
-                    <?php endif; ?>
+            <?php if($jumlahHalaman == 1) : ?>
+            <p></p>
+            <?php else : ?>
+            <?php for($i = 1; $i <= $jumlahHalaman; $i++): ?>
+            <?php if($i == $halamanActive) : ?>
+            <a href="?page=<?= $i ?>" style="font-weight: bold; color: red;"><?= $i ?></a>
+            <?php else : ?>
+            <a href="?page=<?= $i ?>"><?= $i ?></a>
+            <?php endif; ?>
+            <?php endfor; ?>
+            <?php endif; ?>
 
             <?php if($halamanActive < $jumlahHalaman): ?>
-                <a href="?page=<?= $halamanActive + 1; ?>">&raquo;</a>
+            <a href="?page=<?= $halamanActive + 1; ?>">&raquo;</a>
             <?php endif; ?>
         </div>
 
@@ -153,7 +156,7 @@ $jumlahHalaman = ceil($jumlahData / $batas);
                 ?></h1>
     </div>
 
-
+    <script src="script.js"></script>
 </body>
 
 </html>
