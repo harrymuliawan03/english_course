@@ -1,5 +1,4 @@
 <?php 
-
 session_start();
 
 if( !isset($_SESSION["login"]) ) {
@@ -8,24 +7,44 @@ if( !isset($_SESSION["login"]) ) {
 }
 
 require 'function.php';
-$student = query("SELECT * FROM student");
 
-if (isset($_POST["cari"])) {
-    if($_POST['keyword'] == ""){
-        $student = query("SELECT * FROM student");
-    }else {
-        $student = cari($_POST['keyword']);
-        if($student == []) {
-            $keterangan_cari = "Data tidak Ditemukan";
-        }else {
-            $keterangan_cari = "";
-        }
+// buat konfigurasi pagination
+$batas = 2;
+$halamanActive = ( isset($_GET['page']) ) ? $_GET['page'] : 1;
+$awalData = ($batas * $halamanActive) - $batas;
+
+if ( isset($_POST["cari"]) ) {
+    $cari = $_POST['keyword'];
+    $_SESSION['cari'] = $cari;
+} elseif( isset($_POST['all']) ){
+    $_SESSION['cari'] = '';
+}
+// jika ada session cari
+if( isset($_SESSION['cari']) && $_SESSION['cari'] != '' ) {
+    $cari = $_SESSION['cari'];
+    $student = query("SELECT * FROM student WHERE 
+    name like '%$cari%' OR
+    birthplace like '%$cari%' OR
+    year_of_birth like '%$cari%' OR
+    email like '%$cari%' LIMIT $awalData, $batas");
+    if($student == []){
+        $keterangan_cari = 'Data Tidak Ditemukan';
     }
+    $jml = query("SELECT * FROM student WHERE 
+    name like '%$cari%' OR
+    birthplace like '%$cari%' OR
+    year_of_birth like '%$cari%' OR
+    email like '%$cari%'");
+    $jumlahData = count($jml);
+} else {
+    $student = query("SELECT * FROM student LIMIT $awalData, $batas");
+    $jumlahData = count(query("SELECT * FROM student"));
 }
 
-if (isset($POST["all"])) {
-    $student = query("SELECT * FROM student");
-}
+$jumlahHalaman = ceil($jumlahData / $batas);
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -105,6 +124,30 @@ if (isset($POST["all"])) {
             <?php endforeach; ?>
 
         </table>
+        <br><br>
+
+        <!-- Navigasi -->
+        <div>
+            <?php if($halamanActive > 1): ?>
+                <a href="?page=<?= $halamanActive - 1; ?>">&laquo;</a>
+            <?php endif; ?>
+                <?php if($jumlahHalaman == 1) : ?>
+                        <p></p>
+                    <?php else : ?>
+                        <?php for($i = 1; $i <= $jumlahHalaman; $i++): ?>
+                            <?php if($i == $halamanActive) : ?>
+                                <a href="?page=<?= $i ?>" style="font-weight: bold; color: red;"><?= $i ?></a>
+                            <?php else : ?>
+                                <a href="?page=<?= $i ?>"><?= $i ?></a>
+                            <?php endif; ?>
+                        <?php endfor; ?>
+                    <?php endif; ?>
+
+            <?php if($halamanActive < $jumlahHalaman): ?>
+                <a href="?page=<?= $halamanActive + 1; ?>">&raquo;</a>
+            <?php endif; ?>
+        </div>
+
         <h1><?php global $keterangan_cari;
                     echo $keterangan_cari;
                 ?></h1>
